@@ -255,7 +255,7 @@ class FlxTypedButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 		// Since this is a UI element, the default scrollFactor is (0, 0)
 		scrollFactor.set();
 
-		#if (flash && FLX_MOUSE)
+		#if FLX_MOUSE
 		FlxG.stage.addEventListener(MouseEvent.MOUSE_UP, onUpEventListener);
 		#end
 
@@ -308,7 +308,7 @@ class FlxTypedButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 		currentInput = null;
 		input = null;
 
-		#if (flash && FLX_MOUSE)
+		#if FLX_MOUSE
 		FlxG.stage.removeEventListener(MouseEvent.MOUSE_UP, onUpEventListener);
 		#end
 
@@ -421,7 +421,7 @@ class FlxTypedButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 		if (!overlapFound)
 			overlapFound = checkTouchOverlap();
 
-		if (currentInput != null && currentInput.justReleased && input.pressed)
+		if (currentInput != null && currentInput.justReleased && overlapFound)
 		{
 			onUpHandler();
 		}
@@ -496,27 +496,17 @@ class FlxTypedButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 			currentInput = input;
 			onDownHandler();
 		}
-		else
+		else if (status == NORMAL)
 		{
-			if (status == NORMAL)
+			// Allow "swiping" to press a button (dragging it over the button while pressed)
+			if (allowSwiping && input.pressed)
 			{
-				// Allow "swiping" to press a button (dragging it over the button while pressed)
-				if (allowSwiping && input.pressed)
-				{
-					onDownHandler();
-				}
-				else
-				{
-					onOverHandler();
-				}
+				onDownHandler();
 			}
 			else
 			{
-				if(input.justReleased && status == PRESSED)
-				{
-					onUpHandler();
-				}
-			}}
+				onOverHandler();
+			}
 		}
 	}
 
@@ -541,7 +531,7 @@ class FlxTypedButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 	 * Using an event listener is necessary for security reasons on flash -
 	 * certain things like opening a new window are only allowed when they are user-initiated.
 	 */
-	#if (flash && FLX_MOUSE)
+	#if FLX_MOUSE
 	function onUpEventListener(_):Void
 	{
 		if (visible && exists && active && status == PRESSED)
